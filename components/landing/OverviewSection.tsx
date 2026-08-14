@@ -3,7 +3,7 @@ import { Container } from "@/components/ui/Container";
 
 export const OverviewSection: React.FC = () => {
   return (
-    <section className="py-16 md:py-24 border-b border-border-default bg-background-primary">
+    <section className="py-16 md:py-24 border-b border-border-default">
       <Container className="space-y-12">
         {/* Section Header */}
         <div className="space-y-3 max-w-2xl">

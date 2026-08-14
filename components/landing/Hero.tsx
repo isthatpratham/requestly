@@ -3,12 +3,11 @@ import Link from "next/link";
 import { Container } from "@/components/ui/Container";
 import { Button } from "@/components/ui/Button";
 import { Badge } from "@/components/ui/Badge";
-import { HeroVisual } from "./HeroVisual";
 
 export const Hero: React.FC = () => {
   return (
-    <section className="relative pt-12 pb-16 md:pt-20 md:pb-24 overflow-hidden border-b border-border-default">
-      <Container className="space-y-12">
+    <section className="relative pt-16 pb-20 md:pt-28 md:pb-32 overflow-hidden border-b border-border-default">
+      <Container>
         {/* Header Copy Block */}
         <div className="flex flex-col items-start max-w-3xl space-y-5">
           {/* Small Product Identifier */}
@@ -65,11 +64,6 @@ export const Hero: React.FC = () => {
               <span>Browser Privacy</span>
             </div>
           </div>
-        </div>
-
-        {/* Hero Visual Container */}
-        <div className="w-full">
-          <HeroVisual />
         </div>
       </Container>
     </section>

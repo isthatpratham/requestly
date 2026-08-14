@@ -5,7 +5,7 @@ import { Button } from "@/components/ui/Button";
 
 export const CTASection: React.FC = () => {
   return (
-    <section className="py-20 md:py-28 bg-background-primary">
+    <section className="py-20 md:py-28">
       <Container>
         <div className="p-8 md:p-14 rounded-sm border border-border-default bg-background-elevated space-y-6 text-left max-w-4xl mx-auto shadow-subtle">
           <div className="text-xs font-mono uppercase text-text-muted tracking-wider">

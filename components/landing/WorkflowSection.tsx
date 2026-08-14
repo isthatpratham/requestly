@@ -36,7 +36,7 @@ const WORKFLOW_STEPS = [
 
 export const WorkflowSection: React.FC = () => {
   return (
-    <section className="py-16 md:py-24 border-b border-border-default bg-background-secondary">
+    <section className="py-16 md:py-24 border-b border-border-default">
       <Container className="space-y-12">
         <div className="space-y-3 max-w-2xl">
           <div className="text-xs font-mono uppercase text-text-muted tracking-wider">

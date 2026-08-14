@@ -2,6 +2,7 @@ import type { Metadata, Viewport } from "next";
 import "./globals.css";
 import { Navbar } from "@/components/layout/Navbar";
 import { Footer } from "@/components/layout/Footer";
+import { GlobalMatrixBackground } from "@/components/visual/GlobalMatrixBackground";
 import { APP_NAME, APP_DESCRIPTION } from "@/lib/constants";
 
 export const metadata: Metadata = {
@@ -27,10 +28,13 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en" className="h-full bg-background-primary text-text-primary antialiased">
-      <body className="flex min-h-full flex-col font-sans selection:bg-neutral-200 selection:text-brand-black">
-        <Navbar />
-        <main className="flex-1 w-full">{children}</main>
-        <Footer />
+      <body className="flex min-h-full flex-col font-sans selection:bg-neutral-200 selection:text-brand-black relative">
+        <GlobalMatrixBackground />
+        <div className="relative z-10 flex min-h-full flex-col w-full">
+          <Navbar />
+          <main className="flex-1 w-full">{children}</main>
+          <Footer />
+        </div>
       </body>
     </html>
   );
