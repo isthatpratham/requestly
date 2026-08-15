@@ -1,170 +1,87 @@
-# Requestly
+<p align="center">
+  <img src="public/brand/logo-with-wordmark-white.png" alt="Requestly Logo" width="380" />
+</p>
 
-### Discover APIs. Send requests. Build faster.
+A focused developer workspace for public API discovery, live availability checking, server-side request execution, and integration code generation.
 
-Requestly is a developer-focused API discovery and playground platform designed to make working with public APIs faster and simpler.
+Explore the catalog, execute requests in the Playground, inspect live HTTP responses, and organize your development APIs directly in your browser.
 
-Discover APIs from a curated public catalog, inspect their metadata, test real endpoints with an interactive request builder, inspect live responses, generate integration-ready code, and organize useful APIs directly in your browser.
-
-No account required. No user data stored remotely.
-
----
-
-## Overview
-
-Working with an API usually means jumping between an API directory, documentation, Postman, browser tools, and your code editor.
-
-Requestly brings the most useful parts of that workflow into one focused interface.
-
-```text
-Discover
-   ↓
-Inspect
-   ↓
-Test
-   ↓
-Understand
-   ↓
-Generate
-   ↓
-Reuse
-```
-
-The initial API catalog is based on the [`public-apis`](https://github.com/public-apis/public-apis) dataset.
-
-Requestly itself is **API-agnostic**. APIs do not need to exist in the catalog to be tested. Any compatible public API URL can be entered directly into the Playground.
 
 ---
 
-## Features
+## What is Requestly?
 
-### API Discovery
+Working with external services often forces developers to juggle documentation, Postman clients, curl requests, and custom code templates. Requestly brings these processes into one cohesive developer tool:
 
-* Search a large catalog of public APIs
-* Browse APIs by category
-* Filter by authentication, HTTPS and CORS metadata
-* Inspect API descriptions and endpoints
-* View live API availability where supported
+1. **Discover**: Browse over 1,670 normalized public APIs from a structured, searchable catalog.
+2. **Verify**: Perform server-side, real-time health and latency checks on endpoints.
+3. **Execute**: Build arbitrary HTTP requests (headers, query parameters, auth, body) and send them through our secure server proxy.
+4. **Inspect**: Review full HTTP response status, headers, raw body, and pretty-printed JSON payloads.
+5. **Code Generation**: Export verified requests immediately into cURL commands, JavaScript Fetch, or Python code.
+6. **Organize**: Save APIs into custom collections and access local activity history in your workspace.
 
-### API Playground
-
-Test arbitrary API endpoints without leaving Requestly.
-
-Supported methods:
-
-```text
-GET
-POST
-PUT
-PATCH
-DELETE
-```
-
-Configure:
-
-* Query parameters
-* Request headers
-* JSON request bodies
-* API Key authentication
-* Bearer Token authentication
-* Basic Authentication
-
-Inspect:
-
-* HTTP status
-* Response time
-* Response headers
-* Formatted JSON
-* Raw responses
-* Request errors
-
-### Code Generation
-
-Generate ready-to-use request examples in:
-
-* cURL
-* JavaScript
-* Python
-
-### Collections
-
-Save useful APIs into browser-local collections without creating an account.
-
-### Request History
-
-Review and reopen recent requests directly from the browser.
-
-### Live API Health
-
-Requestly performs real API checks when health information is requested.
-
-An API that responds successfully is shown as operational.
-
-An API that cannot be reached is shown as unavailable.
-
-Requestly does not simulate API health or rely solely on catalog metadata.
-
----
-
-## Privacy by Design
-
-Requestly does not require user accounts.
-
-There is no:
-
-* Signup
-* Login
-* User profile
-* User database
-* Cloud-synchronized collection
-* Cloud-synchronized request history
-
-User-specific data such as collections and request history remains in the browser.
-
-API credentials entered into the Playground are request-level data and are not stored in MongoDB.
+**Privacy-First Design**: Requestly requires no user accounts. Your collections, request histories, and credentials are saved locally in your browser storage (`localStorage`) and never leave your machine.
 
 ---
 
 ## Architecture
 
-Requestly is built as a Next.js full-stack application.
+Requestly is built as a server-side proxied Next.js full-stack application backed by MongoDB Atlas.
 
-```text
-                         Requestly
-                            │
-                    ┌───────┴───────┐
-                    │               │
-                 Next.js         Browser
-                    │             Storage
-             ┌──────┴──────┐         │
-             │             │         │
-          API Routes     MongoDB   Collections
-             │             │       & History
-             │             │
-             ▼             │
-       Request Engine      │
-             │             │
-             └──────┬──────┘
-                    │
-                    ▼
-              External APIs
+### Runtime Request flow
+
+```mermaid
+graph TD
+    Developer[Developer Browser Client]
+    NextJS[Next.js App Router Server]
+    Mongo[MongoDB Atlas]
+    Target[Target External API]
+
+    Developer -- 1. Search Catalog --> NextJS
+    NextJS -- Query APIs --> Mongo
+    Developer -- 2. Configure & Trigger Request --> NextJS
+    NextJS -- 3. SSRF Sanitized Outbound Request --> Target
+    Target -- 4. Raw Response Payload --> NextJS
+    NextJS -- 5. Standardized JSON Response --> Developer
+    Developer -- 6. Cache History / Collections --> LocalStorage[(Browser LocalStorage)]
 ```
 
-### Stack
+### Catalog Ingestion Pipeline
 
-| Layer      | Technology    |
-| ---------- | ------------- |
-| Framework  | Next.js       |
-| Language   | TypeScript    |
-| UI         | React         |
-| Styling    | Tailwind CSS  |
-| Database   | MongoDB Atlas |
-| Deployment | Vercel        |
-| API Source | public-apis   |
+```mermaid
+graph TD
+    SourceRepo[public-apis/public-apis GitHub]
+    Parser[Ingestion Script Parser]
+    Deduplicator[Deduplication & Validation]
+    MongoAPIs[MongoDB 'apis' Collection]
 
-There is no separate Express or Node.js backend server.
+    SourceRepo -- Fetch markdown data --> Parser
+    Parser -- Map attributes --> Deduplicator
+    Deduplicator -- Upsert unique documents --> MongoAPIs
+```
 
-Next.js Route Handlers provide the server-side API layer.
+---
+
+## Features
+
+- **API Catalog Explorer**: Filter 1,670+ APIs by category, authentication type, HTTPS requirements, and CORS capabilities.
+- **Live Availability Engine**: On-demand server-side reachability validation checking real-time response latency and status codes.
+- **Request Playground**: Complete editor supporting `GET`, `POST`, `PUT`, `PATCH`, and `DELETE` requests with editable headers, key-value query parameters, structured authentication (Bearer, API Key, Basic), and custom raw JSON bodies.
+- **SSRF Hardened Proxy**: Built-in blocklists for private networks, loopback addresses, localhosts, and internal CIDRs to prevent Server-Side Request Forgery.
+- **Workspace Collections**: Browser-local groups to save, rename, and organize APIs.
+- **Credential-Scrubbed History**: A detailed workspace log to review past executions and reopen them in the playground.
+
+---
+
+## Tech Stack
+
+| Layer           | Technology                                |
+| --------------- | ----------------------------------------- |
+| **Framework**   | Next.js 14 (App Router)                   |
+| **Language**    | TypeScript                                |
+| **Styling**     | Tailwind CSS v3                           |
+| **Database**    | MongoDB Atlas (via native mongodb driver) |
+| **Attribution** | public-apis/public-apis dataset           |
 
 ---
 
@@ -172,104 +89,25 @@ Next.js Route Handlers provide the server-side API layer.
 
 ```text
 requestly/
-│
-├── app/
-│   ├── api/
-│   ├── explore/
-│   ├── playground/
-│   ├── collections/
-│   └── history/
-│
-├── components/
-│   ├── api/
-│   ├── playground/
-│   ├── collections/
-│   ├── history/
-│   ├── layout/
-│   └── ui/
-│
-├── lib/
-│   ├── api/
-│   ├── codegen/
-│   └── security/
-│
-├── models/
-├── hooks/
-├── types/
-├── scripts/
-├── tests/
-├── public/
-│
-└── docs/
-    ├── PRD.md
-    ├── ARCHITECTURE.md
-    ├── DATABASE.md
-    ├── API.md
-    ├── ROADMAP.md
-    └── DESIGN_SYSTEM.md
+├── app/                  # Next.js pages, API endpoints, and layouts
+│   ├── api/              # Route handlers (apis, request execution, health check)
+│   ├── collections/      # Saved collections workspace page
+│   ├── explore/          # Repository browser catalog explorer
+│   ├── history/          # Developer activity log page
+│   └── playground/       # Split-pane request engine playground
+├── components/           # Core presentation components
+│   ├── api/              # Catalog display rows, filters, details, health indicator
+│   ├── collections/      # Collections container layout
+│   ├── history/          # Dense activity table rows
+│   ├── landing/          # Editorial landing blocks (Hero, Overview, Capabilities)
+│   └── ui/               # Reusable primitives (Buttons, Badges, Modals)
+├── docs/                 # Authoritative engineering documentation
+├── lib/                  # Server-side modules (request proxy, DB client, catalog queries)
+├── models/               # MongoDB Document schemas
+├── public/               # Static assets (approved brand images, screenshots)
+├── scripts/              # Catalog database ingestion pipeline
+└── types/                # Strict TypeScript interfaces
 ```
-
----
-
-## Documentation
-
-The `docs/` directory contains the project's engineering source of truth.
-
-| Document                                    | Purpose                                |
-| ------------------------------------------- | -------------------------------------- |
-| [`PRD.md`](docs/PRD.md)                     | Product requirements, scope and goals  |
-| [`ARCHITECTURE.md`](docs/ARCHITECTURE.md)   | Application architecture and data flow |
-| [`DATABASE.md`](docs/DATABASE.md)           | MongoDB collections and data model     |
-| [`API.md`](docs/API.md)                     | Internal API contracts                 |
-| [`ROADMAP.md`](docs/ROADMAP.md)             | Development phases and progress        |
-| [`DESIGN_SYSTEM.md`](docs/DESIGN_SYSTEM.md) | Visual language and UI rules           |
-
----
-
-## Design
-
-Requestly follows a deliberately restrained visual language inspired by Apple's product design and Vercel's monochrome aesthetic.
-
-The interface emphasizes:
-
-* Apple system typography
-* Generous whitespace
-* Near-white surfaces
-* Near-black typography
-* Subtle borders
-* Minimal corner radius
-* No decorative shadows
-* No gradients
-* No glassmorphism
-* No oversized rounded cards
-* Purposeful motion
-* Strong information hierarchy
-
-The API Playground becomes intentionally denser where developer workflows require it.
-
-The landing-page hero uses an interactive visual direction inspired by modern WebGL shader experiences.
-
----
-
-## Security
-
-Because Requestly allows users to send requests to arbitrary URLs, security is a core architectural concern.
-
-The server-side request engine is designed to include:
-
-* URL validation
-* SSRF protection
-* Internal network protection
-* Request timeouts
-* Request size limits
-* Response size limits
-* Header validation
-* Credential protection
-* Redirect validation
-* Abuse protection
-* Controlled error responses
-
-Sensitive authentication values must never be stored in MongoDB or exposed through application logs.
 
 ---
 
@@ -277,239 +115,91 @@ Sensitive authentication values must never be stored in MongoDB or exposed throu
 
 ### Prerequisites
 
-Make sure you have:
+- Node.js (v20 or higher recommended)
+- npm or yarn
+- A MongoDB database (Atlas or local instance)
 
-* Node.js 20+
-* npm
-* A MongoDB Atlas account
-* A MongoDB database for Requestly
+### Installation
 
-### Clone the repository
+1. **Clone the repository**:
 
-```bash
-git clone https://github.com/isthatpratham/requestly.git
-cd requestly
-```
+   ```bash
+   git clone https://github.com/isthatpratham/requestly.git
+   cd requestly
+   ```
 
-### Install dependencies
+2. **Install dependencies**:
 
-```bash
-npm install
-```
+   ```bash
+   npm install
+   ```
 
-### Configure environment variables
+3. **Configure Environment Variables**:
+   Create a `.env.local` file in the root directory:
 
-Create a `.env.local` file:
+   ```env
+   MONGODB_URI=mongodb+srv://<username>:<password>@cluster.mongodb.net
+   MONGODB_DATABASE=requestly
+   ```
 
-```env
-MONGODB_URI=your_mongodb_connection_string
-MONGODB_DATABASE=requestly
-```
+4. **Initialize & Populate the Database**:
+   Run the ingestion pipeline to parse the dataset and index the collection in MongoDB:
 
-Never commit `.env.local` or real credentials to Git.
+   ```bash
+   npm run ingest:apis
+   ```
 
-### Run the development server
-
-```bash
-npm run dev
-```
-
-Open:
-
-```text
-http://localhost:3000
-```
+5. **Start the Development Server**:
+   ```bash
+   npm run dev
+   ```
+   Open [http://localhost:3000](http://localhost:3000) in your browser.
 
 ---
 
-## API Catalog
+## API Surface
 
-Requestly uses the [`public-apis`](https://github.com/public-apis/public-apis) repository as its initial API catalog source.
+All internal endpoints are server-side, read-only (except request proxy), and fully sanitized.
 
-The import process:
-
-```text
-public-apis
-     ↓
-Parse
-     ↓
-Normalize
-     ↓
-Validate
-     ↓
-Deduplicate
-     ↓
-MongoDB Atlas
-     ↓
-Requestly
-```
-
-The catalog provides metadata such as:
-
-* API name
-* Description
-* Category
-* Endpoint
-* Authentication
-* HTTPS
-* CORS
-
-Requestly independently checks API availability rather than assuming that catalog metadata represents current availability.
+| Method   | Endpoint         | Purpose                                   | Query Parameters                                          |
+| -------- | ---------------- | ----------------------------------------- | --------------------------------------------------------- |
+| **GET**  | `/api/apis`      | Paginated search & filter of catalog APIs | `q`, `category`, `auth`, `https`, `cors`, `page`, `limit` |
+| **GET**  | `/api/apis/[id]` | Fetch catalog API details by ID           | —                                                         |
+| **GET**  | `/api/health`    | Live availability check for a catalog API | `apiId`, `url`                                            |
+| **POST** | `/api/request`   | Proxied request execution engine          | Sends `ApiRequestState` payload                           |
 
 ---
 
-## Local Development
+## Security & SSRF Protection
 
-The project is designed around a small full-stack architecture.
+To prevent outbound request abuse and Server-Side Request Forgery (SSRF), the execution proxy (`lib/requestEngine.ts`) implements strict validation rules:
 
-There is no need to run:
-
-```text
-Express
-Docker
-Nginx
-Redis
-Kubernetes
-```
-
-The application can be developed with:
-
-```text
-Next.js
-+
-MongoDB Atlas
-```
-
-and deployed through Vercel.
+- **Private IP Blocking**: Resolves destination hostnames and explicitly blocks loopbacks (`127.0.0.1`, `::1`), private ranges (`10.0.0.0/8`, `172.16.0.0/12`, `192.168.0.0/16`), link-local structures, and multicast networks.
+- **Port Restrictions**: Restricts execution strictly to standard web ports (`80`, `443`).
+- **Timeout Enforcements**: Enforces tight connect and read limits (max 5 seconds) to defend against Slowloris resource exhaustion.
 
 ---
 
-## Deployment
+## Documentation Links
 
-Requestly is designed for deployment on Vercel.
+For deeper architectural context, refer to the documents in `/docs`:
 
-Production architecture:
-
-```text
-GitHub
-   ↓
-Vercel
-   ↓
-Next.js
-   ├── Frontend
-   ├── Server Components
-   └── API Routes
-          │
-          ├── MongoDB Atlas
-          │
-          └── External APIs
-```
-
-Configure the required environment variables in the Vercel project settings before deployment.
+- [Product Requirements Document (PRD)](docs/PRD.md)
+- [Architecture & Design Flow](docs/ARCHITECTURE.md)
+- [Database & Schema Model](docs/DATABASE.md)
+- [Internal API Contracts](docs/API.md)
+- [Design Tokens & UI Philosophy](docs/DESIGN_SYSTEM.md)
+- [Visual Redesign 2.0 Specifications](docs/FRONTEND_2.0.md)
+- [Development Roadmap](docs/ROADMAP.md)
 
 ---
 
-## Project Status
+## API Catalog Attribution
 
-Requestly is currently under active development.
-
-The target is a fully polished MVP covering:
-
-* API discovery
-* API catalog
-* API details
-* Live health checks
-* Interactive API Playground
-* Authentication handling
-* Response inspection
-* Code generation
-* Browser-local collections
-* Browser-local request history
-* Security controls
-* Responsive UI
-* Vercel deployment
-
-The implementation roadmap is available in [`docs/ROADMAP.md`](docs/ROADMAP.md).
-
----
-
-## Roadmap
-
-### MVP
-
-* [ ] Project foundation
-* [ ] MongoDB integration
-* [ ] Public API catalog import
-* [ ] API search and filtering
-* [ ] Explore experience
-* [ ] API detail pages
-* [ ] Live health checks
-* [ ] API Playground
-* [ ] Request configuration
-* [ ] Authentication support
-* [ ] Response viewer
-* [ ] Code generation
-* [ ] Local collections
-* [ ] Local request history
-* [ ] SSRF protection
-* [ ] Security hardening
-* [ ] Responsive design
-* [ ] Accessibility
-* [ ] Testing
-* [ ] Vercel deployment
-
-### Future
-
-Potential post-MVP directions include:
-
-* Scheduled API monitoring
-* Uptime history
-* API change detection
-* OpenAPI / Swagger import
-* Shareable requests
-* Exportable collections
-* API comparison
-* Public API submissions
-* Additional authentication methods
-* Team workspaces
-
----
-
-## Contributing
-
-Requestly is currently being developed as a focused portfolio project.
-
-The architecture and product direction are documented in `docs/`.
-
-Before making significant changes, review:
-
-1. `docs/PRD.md`
-2. `docs/ARCHITECTURE.md`
-3. `docs/DESIGN_SYSTEM.md`
-4. `docs/API.md`
-5. `docs/DATABASE.md`
-6. `docs/ROADMAP.md`
-
-Changes should remain consistent with the documented product and architectural boundaries.
+Requestly's initial public API catalog is sourced directly from the excellent community project [public-apis/public-apis](https://github.com/public-apis/public-apis). We thank the authors, maintainers, and community contributors who maintain that index. All catalog data, endpoints, and trademarks remain the sole property of their respective authors and original owners.
 
 ---
 
 ## License
 
-This project is licensed under the MIT License.
-
-See [`LICENSE`](LICENSE) for details.
-
----
-
-## Acknowledgements
-
-Requestly's initial API catalog is based on the excellent [`public-apis`](https://github.com/public-apis/public-apis) project.
-
-The project also draws visual inspiration from modern Apple and Vercel product design, as well as contemporary WebGL-based web experiences.
-
----
-
-<p align="center">
-  Built with Next.js, TypeScript, MongoDB and a lot of curiosity.
-</p>
+This project is licensed under the MIT License. See [LICENSE](LICENSE) for details.
