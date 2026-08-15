@@ -4,8 +4,9 @@ import * as React from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { cn } from "@/lib/utils";
-import { NAV_LINKS, APP_NAME } from "@/lib/constants";
+import { NAV_LINKS } from "@/lib/constants";
 import { useTheme } from "@/components/layout/ThemeProvider";
+import { RequestlyLogo } from "@/components/ui/RequestlyLogo";
 
 function ThemeToggle() {
   const { resolvedTheme, setTheme } = useTheme();
@@ -86,23 +87,17 @@ export const Navbar: React.FC = () => {
               ]
         )}
       >
-        {/* Logo */}
+        {/* Approved Requestly Logo */}
         <Link
           href="/"
           className={cn(
             "flex items-center gap-2",
-            "font-mono text-xs font-bold tracking-tight text-brand-black",
-            "hover:opacity-70 transition-opacity duration-[var(--dur-micro)]",
+            "hover:opacity-80 transition-opacity duration-[var(--dur-micro)]",
             "focus-visible:outline-none"
           )}
+          aria-label="Requestly Home"
         >
-          <span
-            className="h-5 w-5 bg-brand-black text-brand-white flex items-center justify-center rounded-xs text-[10px] font-black leading-none select-none"
-            aria-hidden
-          >
-            R
-          </span>
-          <span className="hidden sm:inline">{APP_NAME}</span>
+          <RequestlyLogo height={18} />
         </Link>
 
         {/* Desktop Links */}

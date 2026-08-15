@@ -13,6 +13,11 @@ export const metadata: Metadata = {
   description: APP_DESCRIPTION,
   keywords: ["API Discovery", "API Playground", "REST API", "HTTP Client", "Developer Tools"],
   authors: [{ name: "Requestly Team" }],
+  icons: {
+    icon: "/brand/logo-white.png",
+    shortcut: "/brand/logo-white.png",
+    apple: "/brand/logo-white.png",
+  },
 };
 
 export const viewport: Viewport = {
