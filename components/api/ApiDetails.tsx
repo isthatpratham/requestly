@@ -1,6 +1,6 @@
 import * as React from "react";
 import Link from "next/link";
-import { ApiItem } from "@/types/api";
+import { ApiItem, HealthCheckResult } from "@/types/api";
 import { Badge } from "@/components/ui/Badge";
 import { ApiEndpoint } from "./ApiEndpoint";
 import { ApiHealth } from "./ApiHealth";
@@ -10,10 +10,11 @@ import { getMockHealth } from "@/data/mockHealth";
 
 export interface ApiDetailsProps {
   api: ApiItem;
+  initialHealth?: HealthCheckResult;
 }
 
-export const ApiDetails: React.FC<ApiDetailsProps> = ({ api }) => {
-  const health = getMockHealth(api.id);
+export const ApiDetails: React.FC<ApiDetailsProps> = ({ api, initialHealth }) => {
+  const health = initialHealth || getMockHealth(api.id);
 
   return (
     <div className="space-y-8">
@@ -61,7 +62,7 @@ export const ApiDetails: React.FC<ApiDetailsProps> = ({ api }) => {
       <ApiEndpoint url={api.url} method="GET" />
 
       {/* Interactive Live Health Section */}
-      <ApiHealth apiId={api.id} initialHealth={health} />
+      <ApiHealth apiId={api.id} url={api.url} initialHealth={health} />
 
       {/* Technical Metadata Section */}
       <ApiMetadata api={api} />

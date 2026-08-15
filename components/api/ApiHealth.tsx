@@ -7,27 +7,30 @@ import { Button } from "@/components/ui/Button";
 
 export interface ApiHealthProps {
   apiId: string;
+  url?: string;
   initialHealth: HealthCheckResult;
 }
 
-export const ApiHealth: React.FC<ApiHealthProps> = ({ apiId, initialHealth }) => {
+export const ApiHealth: React.FC<ApiHealthProps> = ({ apiId, url, initialHealth }) => {
   const [health, setHealth] = React.useState<HealthCheckResult>(initialHealth);
   const [isChecking, setIsChecking] = React.useState<boolean>(false);
 
   const handleCheckAgain = () => {
     setIsChecking(true);
-    // Simulate checking state before resolving (Tomorrow: GET /api/health?apiId=...)
-    setTimeout(() => {
-      setHealth({
-        ...initialHealth,
-        status: initialHealth.status,
-        responseTime: initialHealth.responseTime
-          ? Math.max(50, Math.round(initialHealth.responseTime + (Math.random() * 20 - 10)))
-          : null,
-        checkedAt: new Date().toISOString(),
+    const healthUrl = `/api/health?apiId=${encodeURIComponent(apiId)}${url ? `&url=${encodeURIComponent(url)}` : ""}`;
+    fetch(healthUrl)
+      .then((res) => res.json())
+      .then((data) => {
+        if (data.success && data.data) {
+          setHealth(data.data);
+        }
+      })
+      .catch((err) => {
+        console.error("Failed to perform live health check:", err);
+      })
+      .finally(() => {
+        setIsChecking(false);
       });
-      setIsChecking(false);
-    }, 600);
   };
 
   const currentStatus: HealthStatus = isChecking ? "checking" : health.status;

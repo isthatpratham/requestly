@@ -3,8 +3,6 @@
 import * as React from "react";
 import { useSearchParams } from "next/navigation";
 import { ApiRequestState, ApiResponseWrapper } from "@/types/api";
-import { MOCK_CATALOG_APIS } from "@/data/mockCatalog";
-import { executeMockRequest } from "@/lib/mockRequestEngine";
 import { recordHistoryEntry } from "@/lib/storage/historyStorage";
 import { RequestBuilder } from "./RequestBuilder";
 import { ResponseViewer } from "./ResponseViewer";
@@ -37,31 +35,38 @@ export const PlaygroundShell: React.FC = () => {
   // Preload from ?api=[id] or ?url=[url] parameter if present
   React.useEffect(() => {
     if (targetApiId) {
-      const catalogApi = MOCK_CATALOG_APIS.find((a) => a.id === targetApiId);
-      if (catalogApi) {
-        setLoadedApiName(catalogApi.name);
+      fetch(`/api/apis/${targetApiId}`)
+        .then((r) => r.json())
+        .then((res) => {
+          if (res.success && res.data?.api) {
+            const catalogApi = res.data.api;
+            setLoadedApiName(catalogApi.name);
 
-        let authType: "none" | "apiKey" | "bearer" | "basic" = "none";
-        if (catalogApi.auth?.toLowerCase().includes("key")) authType = "apiKey";
-        if (catalogApi.auth?.toLowerCase().includes("bearer")) authType = "bearer";
+            let authType: "none" | "apiKey" | "bearer" | "basic" = "none";
+            if (catalogApi.auth?.toLowerCase().includes("key")) authType = "apiKey";
+            if (catalogApi.auth?.toLowerCase().includes("bearer")) authType = "bearer";
 
-        setRequestState({
-          method: "GET",
-          url: catalogApi.url,
-          query: [],
-          headers: [
-            { id: "h_1", key: "Accept", value: "application/json", enabled: true },
-          ],
-          body: "",
-          auth: {
-            type: authType,
-            apiKey: { key: "X-API-Key", value: "", location: "header" },
-            bearer: { token: "" },
-            basic: { username: "", password: "" },
-          },
+            setRequestState({
+              method: "GET",
+              url: catalogApi.url,
+              query: [],
+              headers: [
+                { id: "h_1", key: "Accept", value: "application/json", enabled: true },
+              ],
+              body: "",
+              auth: {
+                type: authType,
+                apiKey: { key: "X-API-Key", value: "", location: "header" },
+                bearer: { token: "" },
+                basic: { username: "", password: "" },
+              },
+            });
+          }
+        })
+        .catch(() => {
+          // Fallback gracefully if catalog fetch fails
         });
-        return;
-      }
+      return;
     }
 
     if (prefillUrl) {
@@ -73,11 +78,20 @@ export const PlaygroundShell: React.FC = () => {
     }
   }, [targetApiId, prefillUrl, prefillMethod]);
 
-  // Execute Mock Request Handler & Record History
+  // Execute Real Request Handler via POST /api/request & Record History
   const handleSendRequest = async () => {
     setIsSending(true);
+    setResponse(null);
     try {
-      const res = await executeMockRequest(requestState);
+      const httpRes = await fetch("/api/request", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(requestState),
+      });
+
+      const res: ApiResponseWrapper = await httpRes.json();
       setResponse(res);
 
       // Record to history safely
@@ -87,13 +101,14 @@ export const PlaygroundShell: React.FC = () => {
         recordHistoryEntry(requestState, null, res.error.message);
       }
     } catch {
-      setResponse({
+      const errResponse: ApiResponseWrapper = {
         success: false,
         error: {
           code: "INTERNAL_ERROR",
           message: "An unexpected error occurred during request execution.",
         },
-      });
+      };
+      setResponse(errResponse);
       recordHistoryEntry(requestState, null, "Unexpected Execution Error");
     } finally {
       setIsSending(false);

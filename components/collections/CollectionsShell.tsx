@@ -21,22 +21,32 @@ import { ApiCard } from "@/components/api/ApiCard";
 
 export const CollectionsShell: React.FC = () => {
   const [collections, setCollections] = React.useState<Collection[]>([]);
+  const [catalogApis, setCatalogApis] = React.useState<ApiItem[]>(MOCK_CATALOG_APIS);
   const [isHydrated, setIsHydrated] = React.useState(false);
   const [newCollectionName, setNewCollectionName] = React.useState("");
   const [isCreating, setIsCreating] = React.useState(false);
   const [editingId, setEditingId] = React.useState<string | null>(null);
   const [editingName, setEditingName] = React.useState("");
 
-  // Load collections safely on client mount
+  // Load collections and catalog APIs cleanly on client mount
   React.useEffect(() => {
     setCollections(getStoredCollections());
     setIsHydrated(true);
+
+    fetch("/api/apis?limit=1000")
+      .then((res) => res.json())
+      .then((data) => {
+        if (data.success && Array.isArray(data.data?.apis) && data.data.apis.length > 0) {
+          setCatalogApis(data.data.apis);
+        }
+      })
+      .catch((err) => console.error("Failed to load catalog APIs in CollectionsShell:", err));
   }, []);
 
   const handleCreate = (e: React.FormEvent) => {
     e.preventDefault();
     if (!newCollectionName.trim()) return;
-    const created = createCollection(newCollectionName.trim());
+    createCollection(newCollectionName.trim());
     setCollections(getStoredCollections());
     setNewCollectionName("");
     setIsCreating(false);
@@ -156,7 +166,7 @@ export const CollectionsShell: React.FC = () => {
         <div className="space-y-8">
           {collections.map((col) => {
             const savedApis = col.apiIds
-              .map((id) => MOCK_CATALOG_APIS.find((a) => a.id === id))
+              .map((id) => catalogApis.find((a) => a.id === id || a.url === id || a.name === id))
               .filter((a): a is ApiItem => a !== undefined);
 
             return (
