@@ -11,13 +11,7 @@ import {
   toggleApiInCollection,
 } from "@/lib/storage/collectionsStorage";
 import { MOCK_CATALOG_APIS } from "@/data/mockCatalog";
-import { Container } from "@/components/ui/Container";
-import { PageHeading } from "@/components/ui/PageHeading";
-import { Badge } from "@/components/ui/Badge";
-import { Button } from "@/components/ui/Button";
-import { Input } from "@/components/ui/Input";
-import { EmptyState } from "@/components/ui/EmptyState";
-import { ApiCard } from "@/components/api/ApiCard";
+import { ApiRow } from "@/components/api/ApiRow";
 
 export const CollectionsShell: React.FC = () => {
   const [collections, setCollections] = React.useState<Collection[]>([]);
@@ -28,15 +22,16 @@ export const CollectionsShell: React.FC = () => {
   const [editingId, setEditingId] = React.useState<string | null>(null);
   const [editingName, setEditingName] = React.useState("");
 
-  // Load collections and catalog APIs cleanly on client mount
   React.useEffect(() => {
     setCollections(getStoredCollections());
     setIsHydrated(true);
 
-    fetch("/api/apis?limit=1000")
+    fetch("/api/apis?limit=100")
       .then((res) => res.json())
       .then((data) => {
-        if (data.success && Array.isArray(data.data?.apis) && data.data.apis.length > 0) {
+        if (data.success && Array.isArray(data.data?.items) && data.data.items.length > 0) {
+          setCatalogApis(data.data.items);
+        } else if (data.success && Array.isArray(data.data?.apis) && data.data.apis.length > 0) {
           setCatalogApis(data.data.apis);
         }
       })
@@ -74,201 +69,183 @@ export const CollectionsShell: React.FC = () => {
 
   if (!isHydrated) {
     return (
-      <Container className="py-12 space-y-6">
-        <PageHeading
-          title="My Saved Collections"
-          description="Organize, group, and launch your saved public APIs."
-        />
-        <div className="p-8 text-center text-xs font-mono text-text-muted">
-          Loading stored collections...
+      <div className="min-h-screen" style={{ paddingTop: "72px" }}>
+        <div className="max-w-5xl mx-auto px-6 md:px-10 py-12 font-mono text-xs text-text-muted">
+          Loading stored collections…
         </div>
-      </Container>
+      </div>
     );
   }
 
   return (
-    <Container className="py-8 space-y-8">
-      {/* Header Bar */}
-      <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-4">
-        <PageHeading
-          title="My Saved Collections"
-          description="Group, manage, and quickly access saved public APIs. Persisted locally in your browser workspace."
-          badge={
-            <Badge variant="outline" size="sm" className="font-mono">
-              COLLECTIONS // {collections.length}
-            </Badge>
-          }
-        />
-
-        <Button
-          variant="primary"
-          size="md"
-          onClick={() => setIsCreating(true)}
-          className="font-mono text-xs shrink-0 self-start sm:self-auto"
-        >
-          + Create Collection
-        </Button>
+    <div className="min-h-screen" style={{ paddingTop: "72px" }}>
+      {/* Header */}
+      <div className="border-b border-border-default bg-background-secondary">
+        <div className="max-w-5xl mx-auto px-6 md:px-10 py-8">
+          <div className="flex flex-wrap items-center justify-between gap-3 mb-2">
+            <span className="font-mono text-[10px] tracking-[0.2em] uppercase text-text-muted">
+              Workspace // {collections.length} Collections
+            </span>
+            <button
+              type="button"
+              onClick={() => setIsCreating(true)}
+              className="px-3 py-1.5 rounded-xs bg-brand-black text-brand-white text-xs font-mono font-medium hover:opacity-80 transition-opacity"
+            >
+              + Create Collection
+            </button>
+          </div>
+          <h1 className="font-display text-3xl sm:text-4xl font-medium text-brand-black tracking-tight mb-2">
+            Collections
+          </h1>
+          <p className="text-sm text-text-secondary max-w-lg leading-relaxed">
+            Group related APIs into custom collections for fast reference and execution.
+            Saved locally in your browser.
+          </p>
+        </div>
       </div>
 
-      {/* Create Collection Form Modal/Inline */}
-      {isCreating && (
-        <form
-          onSubmit={handleCreate}
-          className="p-5 rounded-sm border border-border-default bg-background-elevated space-y-4 max-w-lg"
-        >
-          <h3 className="text-sm font-semibold text-brand-black font-mono">
-            Create New Collection
-          </h3>
-          <div className="space-y-1">
-            <label className="block text-xs font-mono text-text-muted">Collection Name</label>
-            <Input
+      {/* Main Content */}
+      <div className="max-w-5xl mx-auto px-6 md:px-10 py-8 space-y-8">
+
+        {/* Create collection inline form */}
+        {isCreating && (
+          <form
+            onSubmit={handleCreate}
+            className="p-4 border border-border-default rounded-xs bg-background-elevated space-y-3 max-w-md"
+          >
+            <span className="font-mono text-[10px] uppercase text-text-muted block">
+              New Collection
+            </span>
+            <input
               type="text"
               value={newCollectionName}
               onChange={(e) => setNewCollectionName(e.target.value)}
-              placeholder="e.g. Weather Services, Dev Tools"
+              placeholder="e.g. Financial APIs, Weather Services"
               autoFocus
-              className="h-9 text-xs font-sans"
+              className="w-full h-8 px-3 text-xs font-mono bg-background-primary border border-border-default rounded-xs focus:outline-none focus:border-accent-blue"
             />
-          </div>
-          <div className="flex items-center gap-2 pt-2">
-            <Button type="submit" variant="primary" size="sm">
-              Save Collection
-            </Button>
-            <Button
-              type="button"
-              variant="ghost"
-              size="sm"
-              onClick={() => {
-                setIsCreating(false);
-                setNewCollectionName("");
-              }}
-            >
-              Cancel
-            </Button>
-          </div>
-        </form>
-      )}
-
-      {/* Collections List or Empty State */}
-      {collections.length === 0 ? (
-        <EmptyState
-          title="No collections created yet"
-          description="Create collections to group related APIs for fast testing in the Playground or inspection."
-          action={
-            <Link href="/explore">
-              <Button variant="outline" size="sm">
-                Explore Public Catalog →
-              </Button>
-            </Link>
-          }
-        />
-      ) : (
-        <div className="space-y-8">
-          {collections.map((col) => {
-            const savedApis = col.apiIds
-              .map((id) => catalogApis.find((a) => a.id === id || a.url === id || a.name === id))
-              .filter((a): a is ApiItem => a !== undefined);
-
-            return (
-              <div
-                key={col.id}
-                className="p-6 rounded-sm border border-border-default bg-background-elevated space-y-6"
+            <div className="flex items-center gap-2">
+              <button
+                type="submit"
+                className="px-3 py-1 rounded-xs bg-brand-black text-brand-white text-xs font-mono"
               >
-                {/* Collection Title Header */}
-                <div className="flex flex-wrap items-center justify-between gap-3 border-b border-border-subtle pb-4">
-                  <div>
-                    {editingId === col.id ? (
-                      <div className="flex items-center gap-2">
-                        <Input
-                          type="text"
-                          value={editingName}
-                          onChange={(e) => setEditingName(e.target.value)}
-                          className="h-8 text-sm font-sans"
-                        />
-                        <Button
-                          variant="primary"
-                          size="sm"
-                          onClick={() => handleRename(col.id)}
-                          className="h-8 px-2 text-xs"
-                        >
-                          Save
-                        </Button>
-                        <Button
-                          variant="ghost"
-                          size="sm"
-                          onClick={() => setEditingId(null)}
-                          className="h-8 px-2 text-xs"
-                        >
-                          Cancel
-                        </Button>
-                      </div>
-                    ) : (
-                      <h2 className="text-lg font-semibold text-brand-black tracking-tight">
-                        {col.name}
-                      </h2>
-                    )}
-                    <p className="text-xs font-mono text-text-muted mt-0.5">
-                      {savedApis.length} saved APIs · Updated {new Date(col.updatedAt).toLocaleDateString()}
-                    </p>
-                  </div>
+                Save
+              </button>
+              <button
+                type="button"
+                onClick={() => { setIsCreating(false); setNewCollectionName(""); }}
+                className="px-3 py-1 text-xs font-mono text-text-muted hover:text-brand-black"
+              >
+                Cancel
+              </button>
+            </div>
+          </form>
+        )}
 
-                  <div className="flex items-center gap-2">
-                    {editingId !== col.id && (
-                      <Button
-                        variant="ghost"
-                        size="sm"
-                        onClick={() => {
-                          setEditingId(col.id);
-                          setEditingName(col.name);
-                        }}
-                        className="text-xs font-mono text-text-secondary hover:text-brand-black"
-                      >
-                        Rename
-                      </Button>
-                    )}
-                    <Button
-                      variant="ghost"
-                      size="sm"
-                      onClick={() => handleDelete(col.id)}
-                      className="text-xs font-mono text-semantic-error-fg hover:text-red-700"
-                    >
-                      Delete
-                    </Button>
-                  </div>
-                </div>
+        {collections.length === 0 ? (
+          <div className="border border-border-default rounded-xs px-6 py-16 text-center">
+            <p className="font-display text-xl text-text-muted mb-2">No collections created.</p>
+            <p className="text-xs text-text-muted mb-6">
+              Create a collection to organize APIs saved from the catalog.
+            </p>
+            <button
+              type="button"
+              onClick={() => setIsCreating(true)}
+              className="inline-flex items-center gap-2 px-4 py-2 rounded-xs bg-brand-black text-brand-white text-xs font-mono"
+            >
+              + Create First Collection
+            </button>
+          </div>
+        ) : (
+          <div className="space-y-8">
+            {collections.map((col) => {
+              const savedApis = col.apiIds
+                .map((id) => catalogApis.find((a) => a.id === id || a.url === id || a.name === id))
+                .filter((a): a is ApiItem => a !== undefined);
 
-                {/* Saved API Cards Grid */}
-                {savedApis.length === 0 ? (
-                  <div className="p-6 text-center border border-dashed border-border-subtle rounded-xs text-xs font-mono text-text-muted">
-                    No APIs saved in this collection. Browse the{" "}
-                    <Link href="/explore" className="underline hover:text-brand-black">
-                      Catalog
-                    </Link>{" "}
-                    to add APIs.
-                  </div>
-                ) : (
-                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                    {savedApis.map((api) => (
-                      <div key={api.id} className="relative group">
-                        <ApiCard api={api} />
+              return (
+                <div key={col.id} className="border border-border-default rounded-xs overflow-hidden bg-background-elevated">
+                  {/* Collection Header */}
+                  <div className="flex items-center justify-between px-4 py-3 bg-background-secondary border-b border-border-default">
+                    <div>
+                      {editingId === col.id ? (
+                        <div className="flex items-center gap-2">
+                          <input
+                            type="text"
+                            value={editingName}
+                            onChange={(e) => setEditingName(e.target.value)}
+                            className="h-7 px-2 text-xs font-mono border border-border-default rounded-xs"
+                          />
+                          <button
+                            type="button"
+                            onClick={() => handleRename(col.id)}
+                            className="text-xs font-mono text-accent-blue font-semibold"
+                          >
+                            Save
+                          </button>
+                        </div>
+                      ) : (
+                        <h2 className="font-display text-lg font-medium text-brand-black">
+                          {col.name}
+                        </h2>
+                      )}
+                      <span className="font-mono text-[10px] text-text-muted">
+                        {savedApis.length} APIs · Updated {new Date(col.updatedAt).toLocaleDateString()}
+                      </span>
+                    </div>
+
+                    <div className="flex items-center gap-3 font-mono text-[11px]">
+                      {editingId !== col.id && (
                         <button
                           type="button"
-                          onClick={() => handleRemoveApi(col.id, api.id)}
-                          title="Remove from collection"
-                          aria-label={`Remove ${api.name} from collection`}
-                          className="absolute top-3 right-3 h-6 w-6 rounded-full bg-background-elevated border border-border-default text-text-muted hover:text-semantic-error-fg text-xs font-mono flex items-center justify-center shadow-xs"
+                          onClick={() => { setEditingId(col.id); setEditingName(col.name); }}
+                          className="text-text-muted hover:text-brand-black"
                         >
-                          ✕
+                          Rename
                         </button>
-                      </div>
-                    ))}
+                      )}
+                      <button
+                        type="button"
+                        onClick={() => handleDelete(col.id)}
+                        className="text-text-disabled hover:text-semantic-error"
+                      >
+                        Delete
+                      </button>
+                    </div>
                   </div>
-                )}
-              </div>
-            );
-          })}
-        </div>
-      )}
-    </Container>
+
+                  {/* Saved APIs List */}
+                  {savedApis.length === 0 ? (
+                    <div className="px-4 py-8 text-center font-mono text-xs text-text-muted">
+                      No APIs in this collection yet. Browse the{" "}
+                      <Link href="/explore" className="underline hover:text-brand-black">
+                        Catalog
+                      </Link>{" "}
+                      to save APIs here.
+                    </div>
+                  ) : (
+                    <div className="divide-y divide-border-subtle">
+                      {savedApis.map((api) => (
+                        <div key={api.id} className="relative group">
+                          <ApiRow api={api} />
+                          <button
+                            type="button"
+                            onClick={() => handleRemoveApi(col.id, api.id)}
+                            title="Remove from collection"
+                            className="absolute right-12 top-1/2 -translate-y-1/2 hidden group-hover:block font-mono text-[10px] text-text-muted hover:text-semantic-error"
+                          >
+                            Remove
+                          </button>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                </div>
+              );
+            })}
+          </div>
+        )}
+      </div>
+    </div>
   );
 };

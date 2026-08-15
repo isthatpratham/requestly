@@ -1,7 +1,6 @@
 import * as React from "react";
 import { ApiItem } from "@/types/api";
-import { ApiCard } from "./ApiCard";
-import { EmptyState } from "@/components/ui/EmptyState";
+import { ApiRow } from "./ApiRow";
 import { Button } from "@/components/ui/Button";
 
 export interface ApiGridProps {
@@ -20,34 +19,42 @@ export const ApiGrid: React.FC<ApiGridProps> = ({
   className,
 }) => {
   return (
-    <div className={`space-y-4 ${className || ""}`}>
-      {/* Result Counter Header */}
-      <div className="flex items-center justify-between text-xs font-mono text-text-muted pb-2 border-b border-border-subtle">
-        <span>
-          SHOWING {apis.length} OF {totalCount} CATALOG APIS
+    <div className={className}>
+      {/* Result counter — repository browser header */}
+      <div className="flex items-center justify-between px-4 py-2.5 border-b border-border-default bg-background-secondary rounded-t-xs">
+        <span className="font-mono text-[10px] tracking-wider text-text-muted uppercase">
+          {apis.length} of {totalCount} APIs
         </span>
         {hasActiveFilters && (
-          <span className="text-[11px] text-text-secondary">Filtered Results</span>
+          <button
+            type="button"
+            onClick={onResetFilters}
+            className="font-mono text-[10px] text-text-muted hover:text-text-primary underline underline-offset-2 transition-colors"
+          >
+            Clear filters
+          </button>
         )}
       </div>
 
-      {/* Grid or Empty State */}
+      {/* Row list or empty state */}
       {apis.length > 0 ? (
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+        <div className="border border-t-0 border-border-default rounded-b-xs overflow-hidden divide-y-0">
           {apis.map((api) => (
-            <ApiCard key={api.id} api={api} />
+            <ApiRow key={api.id} api={api} />
           ))}
         </div>
       ) : (
-        <EmptyState
-          title="No public APIs match your criteria"
-          description="Try broadening your search term or clearing active category, authentication, or protocol filters."
-          action={
+        <div className="border border-t-0 border-border-default rounded-b-xs px-6 py-16 text-center">
+          <p className="font-display text-xl text-text-muted mb-2">No APIs found.</p>
+          <p className="text-xs text-text-muted mb-6">
+            Try clearing your search or filters to see all catalog APIs.
+          </p>
+          {hasActiveFilters && (
             <Button variant="outline" size="sm" onClick={onResetFilters}>
               Clear All Filters
             </Button>
-          }
-        />
+          )}
+        </div>
       )}
     </div>
   );

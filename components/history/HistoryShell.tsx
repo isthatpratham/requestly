@@ -8,12 +8,6 @@ import {
   clearStoredHistory,
   deleteHistoryEntry,
 } from "@/lib/storage/historyStorage";
-import { MOCK_CATALOG_APIS } from "@/data/mockCatalog";
-import { Container } from "@/components/ui/Container";
-import { PageHeading } from "@/components/ui/PageHeading";
-import { Badge } from "@/components/ui/Badge";
-import { Button } from "@/components/ui/Button";
-import { EmptyState } from "@/components/ui/EmptyState";
 
 export const HistoryShell: React.FC = () => {
   const [history, setHistory] = React.useState<HistoryEntry[]>([]);
@@ -38,133 +32,123 @@ export const HistoryShell: React.FC = () => {
 
   if (!isHydrated) {
     return (
-      <Container className="py-12 space-y-6">
-        <PageHeading title="Request History" description="Recent API executions log." />
-        <div className="p-8 text-center text-xs font-mono text-text-muted">
-          Loading stored request history...
+      <div className="min-h-screen" style={{ paddingTop: "72px" }}>
+        <div className="max-w-5xl mx-auto px-6 md:px-10 py-12 font-mono text-xs text-text-muted">
+          Loading stored request history…
         </div>
-      </Container>
+      </div>
     );
   }
 
   return (
-    <Container className="py-8 space-y-8">
-      {/* Header Bar */}
-      <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-4">
-        <PageHeading
-          title="Request History"
-          description="Inspect past API requests sent from the Playground. Persisted locally in your browser workspace with sensitive credential redaction."
-          badge={
-            <Badge variant="outline" size="sm" className="font-mono">
-              LOG // {history.length} ENTRIES
-            </Badge>
-          }
-        />
-
-        {history.length > 0 && (
-          <Button
-            variant="ghost"
-            size="sm"
-            onClick={handleClearAll}
-            className="font-mono text-xs text-semantic-error-fg hover:text-red-700 shrink-0 self-start sm:self-auto"
-          >
-            Clear History
-          </Button>
-        )}
+    <div className="min-h-screen" style={{ paddingTop: "72px" }}>
+      {/* Header */}
+      <div className="border-b border-border-default bg-background-secondary">
+        <div className="max-w-5xl mx-auto px-6 md:px-10 py-8">
+          <div className="flex flex-wrap items-center justify-between gap-3 mb-2">
+            <span className="font-mono text-[10px] tracking-[0.2em] uppercase text-text-muted">
+              Activity Log // {history.length} Entries
+            </span>
+            {history.length > 0 && (
+              <button
+                type="button"
+                onClick={handleClearAll}
+                className="font-mono text-[10px] text-text-muted hover:text-semantic-error transition-colors"
+              >
+                Clear History
+              </button>
+            )}
+          </div>
+          <h1 className="font-display text-3xl sm:text-4xl font-medium text-brand-black tracking-tight mb-2">
+            Request History
+          </h1>
+          <p className="text-sm text-text-secondary max-w-lg leading-relaxed">
+            Local execution log of past HTTP requests. Sensitive keys and tokens
+            are automatically scrubbed before saving.
+          </p>
+        </div>
       </div>
 
-      {/* History List or Empty State */}
-      {history.length === 0 ? (
-        <EmptyState
-          title="No request history recorded yet"
-          description="Execute HTTP requests in the API Playground to inspect past requests, response status codes, and latency logs here."
-          action={
-            <Link href="/playground">
-              <Button variant="primary" size="sm">
-                Open API Playground →
-              </Button>
+      {/* Main Content — Dense Log Table */}
+      <div className="max-w-5xl mx-auto px-6 md:px-10 py-8">
+        {history.length === 0 ? (
+          <div className="border border-border-default rounded-xs px-6 py-16 text-center">
+            <p className="font-display text-xl text-text-muted mb-2">No history recorded.</p>
+            <p className="text-xs text-text-muted mb-6">
+              Execute HTTP requests in the Playground to see your activity log here.
+            </p>
+            <Link
+              href="/playground"
+              className="inline-flex items-center gap-2 px-4 py-2 rounded-xs bg-brand-black text-brand-white text-xs font-mono"
+            >
+              Open Playground →
             </Link>
-          }
-        />
-      ) : (
-        <div className="space-y-3">
-          {history.map((item) => {
-            const matchedCatalogApi = MOCK_CATALOG_APIS.find((a) =>
-              item.url.toLowerCase().includes(a.id) || a.url.toLowerCase().includes(item.url.toLowerCase())
-            );
+          </div>
+        ) : (
+          <div className="border border-border-default rounded-xs overflow-hidden divide-y divide-border-subtle bg-background-elevated">
+            {/* Table Header */}
+            <div className="grid grid-cols-[60px_1fr_100px_80px_140px_auto] gap-3 px-4 py-2 bg-background-secondary border-b border-border-default font-mono text-[10px] text-text-muted uppercase tracking-wider select-none">
+              <span>Method</span>
+              <span>URL</span>
+              <span>Status</span>
+              <span>Latency</span>
+              <span>Time</span>
+              <span className="text-right">Action</span>
+            </div>
 
-            return (
+            {/* Log Rows */}
+            {history.map((item) => (
               <div
                 key={item.id}
-                className="p-4 rounded-sm border border-border-default bg-background-elevated space-y-3 hover:border-border-strong transition-colors"
+                className="grid grid-cols-[60px_1fr_100px_80px_140px_auto] gap-3 px-4 py-3 items-center text-xs font-mono hover:bg-background-secondary transition-colors duration-[80ms]"
               >
-                <div className="flex flex-wrap items-center justify-between gap-2 border-b border-border-subtle pb-2">
-                  <div className="flex flex-wrap items-center gap-2">
-                    <span className="font-mono font-bold text-xs px-2 py-0.5 rounded-xs bg-neutral-900 text-neutral-100">
-                      {item.method}
-                    </span>
+                {/* Method */}
+                <span className="font-bold text-accent-blue uppercase">
+                  {item.method}
+                </span>
 
-                    <Badge
-                      variant={item.isSuccess ? "operational" : "warning"}
-                      size="sm"
-                      className="font-mono"
-                    >
-                      {item.status ? `${item.status} ${item.statusText}` : item.statusText}
-                    </Badge>
-
-                    {item.responseTime > 0 && (
-                      <span className="text-xs font-mono text-text-muted">
-                        {item.responseTime} ms
-                      </span>
-                    )}
-
-                    <Badge variant="outline" size="sm" className="font-mono">
-                      Auth: {item.authType}
-                    </Badge>
-                  </div>
-
-                  <span className="text-[11px] font-mono text-text-muted">
-                    {new Date(item.timestamp).toLocaleString()}
-                  </span>
-                </div>
-
-                {/* URL Display */}
-                <div className="p-2 rounded-xs bg-background-secondary border border-border-subtle font-mono text-xs text-text-primary select-all truncate">
+                {/* URL */}
+                <span className="text-text-primary truncate" title={item.url}>
                   {item.url}
-                </div>
+                </span>
 
-                {/* Actions Bar */}
-                <div className="flex items-center justify-between pt-1 text-xs">
-                  <div className="flex items-center gap-3">
-                    <Link href={`/playground?url=${encodeURIComponent(item.url)}&method=${item.method}`}>
-                      <Button variant="outline" size="sm" className="text-xs font-mono">
-                        Reopen in Playground →
-                      </Button>
-                    </Link>
+                {/* Status */}
+                <span className={item.isSuccess ? "text-semantic-success font-semibold" : "text-semantic-error font-semibold"}>
+                  {item.status ? `${item.status}` : "ERR"}
+                </span>
 
-                    {matchedCatalogApi && (
-                      <Link href={`/explore/${matchedCatalogApi.id}`}>
-                        <Button variant="ghost" size="sm" className="text-xs text-text-secondary hover:text-brand-black">
-                          Inspect Catalog API
-                        </Button>
-                      </Link>
-                    )}
-                  </div>
+                {/* Latency */}
+                <span className="text-text-muted">
+                  {item.responseTime > 0 ? `${item.responseTime}ms` : "—"}
+                </span>
 
-                  <Button
-                    variant="ghost"
-                    size="sm"
-                    onClick={() => handleDeleteItem(item.id)}
-                    className="text-xs font-mono text-text-muted hover:text-semantic-error-fg"
+                {/* Time */}
+                <span className="text-text-muted text-[10px]">
+                  {new Date(item.timestamp).toLocaleTimeString()}
+                </span>
+
+                {/* Actions */}
+                <div className="flex items-center justify-end gap-2">
+                  <Link
+                    href={`/playground?url=${encodeURIComponent(item.url)}&method=${item.method}`}
+                    className="text-[10px] text-text-muted hover:text-brand-black underline underline-offset-2"
                   >
-                    Delete Entry
-                  </Button>
+                    Reopen
+                  </Link>
+                  <button
+                    type="button"
+                    onClick={() => handleDeleteItem(item.id)}
+                    className="text-[10px] text-text-disabled hover:text-semantic-error"
+                    title="Delete entry"
+                  >
+                    ✕
+                  </button>
                 </div>
               </div>
-            );
-          })}
-        </div>
-      )}
-    </Container>
+            ))}
+          </div>
+        )}
+      </div>
+    </div>
   );
 };

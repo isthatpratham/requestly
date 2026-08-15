@@ -1,9 +1,6 @@
 "use client";
 
 import * as React from "react";
-import { Container } from "@/components/ui/Container";
-import { PageHeading } from "@/components/ui/PageHeading";
-import { Badge } from "@/components/ui/Badge";
 import { ApiSearch } from "@/components/api/ApiSearch";
 import { ApiFilters } from "@/components/api/ApiFilters";
 import { ApiGrid } from "@/components/api/ApiGrid";
@@ -16,10 +13,12 @@ export default function ExplorePage() {
   const [isLoading, setIsLoading] = React.useState<boolean>(true);
 
   React.useEffect(() => {
-    fetch("/api/apis?limit=1000")
+    fetch("/api/apis?limit=100")
       .then((res) => res.json())
       .then((data) => {
-        if (data.success && Array.isArray(data.data?.apis) && data.data.apis.length > 0) {
+        if (data.success && Array.isArray(data.data?.items) && data.data.items.length > 0) {
+          setCatalogApis(data.data.items);
+        } else if (data.success && Array.isArray(data.data?.apis) && data.data.apis.length > 0) {
           setCatalogApis(data.data.apis);
         }
       })
@@ -48,43 +47,54 @@ export default function ExplorePage() {
   } = useApiSearch(catalogApis);
 
   return (
-    <Container className="py-8 space-y-8">
-      {/* Page Heading */}
-      <PageHeading
-        title="Public API Catalog Explorer"
-        description="Search, filter, and inspect curated public APIs. Launch any API directly in the Playground or copy ready-to-use integration code."
-        badge={
-          <Badge variant="outline" size="sm" className="font-mono">
-            {isLoading ? "LOADING CATALOG..." : `CATALOG // ${catalogApis.length} ENTRIES`}
-          </Badge>
-        }
-      />
+    <div className="min-h-screen" style={{ paddingTop: "72px" }}>
+      {/* Page header */}
+      <div className="border-b border-border-default bg-background-secondary">
+        <div className="max-w-5xl mx-auto px-6 md:px-10 py-10">
+          <div className="mb-2">
+            <span className="font-mono text-[10px] tracking-[0.2em] uppercase text-text-muted">
+              Public API Catalog
+            </span>
+          </div>
+          <h1 className="font-display text-3xl sm:text-4xl font-medium text-brand-black tracking-tight mb-3">
+            Explore APIs
+          </h1>
+          <p className="text-sm text-text-secondary max-w-md leading-relaxed">
+            {isLoading
+              ? "Loading catalog…"
+              : `${catalogApis.length.toLocaleString()} curated public APIs. Search, filter, and launch in the Playground.`}
+          </p>
+        </div>
+      </div>
 
-      {/* Search and Filters Section */}
-      <div className="p-6 rounded-sm border border-border-default bg-background-elevated space-y-6">
-        <ApiSearch value={searchQuery} onChange={setSearchQuery} />
+      {/* Search + Filters bar */}
+      <div className="border-b border-border-default bg-background-elevated">
+        <div className="max-w-5xl mx-auto px-6 md:px-10 py-4 space-y-3">
+          <ApiSearch value={searchQuery} onChange={setSearchQuery} />
+          <ApiFilters
+            category={category}
+            onCategoryChange={setCategory}
+            auth={auth}
+            onAuthChange={setAuth}
+            https={https}
+            onHttpsChange={setHttps}
+            cors={cors}
+            onCorsChange={setCors}
+            hasActiveFilters={hasActiveFilters}
+            onResetFilters={resetFilters}
+          />
+        </div>
+      </div>
 
-        <ApiFilters
-          category={category}
-          onCategoryChange={setCategory}
-          auth={auth}
-          onAuthChange={setAuth}
-          https={https}
-          onHttpsChange={setHttps}
-          cors={cors}
-          onCorsChange={setCors}
+      {/* Repository browser result list */}
+      <div className="max-w-5xl mx-auto px-6 md:px-10 py-8">
+        <ApiGrid
+          apis={filteredApis}
+          totalCount={catalogApis.length}
           hasActiveFilters={hasActiveFilters}
           onResetFilters={resetFilters}
         />
       </div>
-
-      {/* API Results Grid */}
-      <ApiGrid
-        apis={filteredApis}
-        totalCount={catalogApis.length}
-        hasActiveFilters={hasActiveFilters}
-        onResetFilters={resetFilters}
-      />
-    </Container>
+    </div>
   );
 }

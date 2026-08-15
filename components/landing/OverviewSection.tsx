@@ -1,56 +1,70 @@
 import * as React from "react";
-import { Container } from "@/components/ui/Container";
+
+const pillars = [
+  {
+    index: "01",
+    title: "Discovery",
+    description:
+      "1,670 public APIs. Normalized metadata: category, authentication, HTTPS, CORS, live health status. A structured catalog you can actually search and trust.",
+  },
+  {
+    index: "02",
+    title: "Experimentation",
+    description:
+      "Execute any HTTP request directly from the server. Custom headers, query parameters, JSON bodies, API key and Bearer token auth — configured in seconds.",
+  },
+  {
+    index: "03",
+    title: "Integration",
+    description:
+      "Export working request configurations as cURL, JavaScript Fetch, or Python Requests snippets. Copy and paste into your codebase without rewriting.",
+  },
+];
 
 export const OverviewSection: React.FC = () => {
   return (
-    <section className="py-16 md:py-24 border-b border-border-default">
-      <Container className="space-y-12">
-        {/* Section Header */}
-        <div className="space-y-3 max-w-2xl">
-          <div className="text-xs font-mono uppercase text-text-muted tracking-wider">
-            01 // PRODUCT OVERVIEW
-          </div>
-          <h2 className="text-2xl sm:text-3xl font-semibold tracking-tight text-brand-black">
-            API discovery and experimentation combined in one focused workspace.
-          </h2>
-          <p className="text-sm font-normal text-text-secondary leading-relaxed">
-            Finding an API is only the first step. Developers need to know whether an API is reachable, what parameters it requires, what a real response looks like, and how to write the integration code.
-          </p>
+    <section className="border-b border-border-default py-20 md:py-28">
+      <div className="max-w-5xl mx-auto px-6 md:px-10">
+
+        {/* Section label */}
+        <div className="mb-12 md:mb-16">
+          <span className="font-mono text-[10px] tracking-[0.2em] uppercase text-text-muted">
+            Product Overview
+          </span>
         </div>
 
-        {/* 3 Core Value Pillars */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-          <div className="p-6 rounded-sm border border-border-default bg-background-elevated space-y-3">
-            <div className="font-mono text-xs text-text-muted font-semibold">01 / DISCOVERY</div>
-            <h3 className="text-base font-semibold text-brand-black tracking-tight">
-              Curated Public Catalog
-            </h3>
-            <p className="text-xs text-text-secondary leading-relaxed">
-              Explore normalized metadata across hundreds of public APIs. Search by category, authentication requirement, HTTPS support, and CORS capability.
-            </p>
-          </div>
+        {/* Large editorial statement */}
+        <h2 className="font-display text-3xl sm:text-4xl md:text-5xl font-medium text-brand-black leading-[1.1] tracking-[-0.015em] max-w-2xl mb-16 md:mb-20 text-balance">
+          API discovery and experimentation in one focused workspace.
+        </h2>
 
-          <div className="p-6 rounded-sm border border-border-default bg-background-elevated space-y-3">
-            <div className="font-mono text-xs text-text-muted font-semibold">02 / EXPERIMENTATION</div>
-            <h3 className="text-base font-semibold text-brand-black tracking-tight">
-              Arbitrary Request Engine
-            </h3>
-            <p className="text-xs text-text-secondary leading-relaxed">
-              Test any URL directly in the Playground. Configure custom headers, query parameters, request bodies, and authentication headers in seconds.
-            </p>
-          </div>
+        {/* Three pillars — row-based, not card-based */}
+        <div className="space-y-0 divide-y divide-border-default">
+          {pillars.map((p) => (
+            <div
+              key={p.index}
+              className="grid grid-cols-1 md:grid-cols-[120px_1fr_1fr] gap-4 md:gap-8 py-8 md:py-10 group"
+            >
+              {/* Number */}
+              <div className="font-mono text-[11px] tracking-widest text-text-muted uppercase pt-0.5">
+                {p.index}
+              </div>
 
-          <div className="p-6 rounded-sm border border-border-default bg-background-elevated space-y-3">
-            <div className="font-mono text-xs text-text-muted font-semibold">03 / INTEGRATION</div>
-            <h3 className="text-base font-semibold text-brand-black tracking-tight">
-              Instant Code Generation
-            </h3>
-            <p className="text-xs text-text-secondary leading-relaxed">
-              Convert working request configurations into clean cURL, JavaScript (Fetch), and Python (Requests) snippets ready to paste into your codebase.
-            </p>
-          </div>
+              {/* Title */}
+              <div>
+                <h3 className="font-display text-2xl md:text-3xl font-medium text-brand-black tracking-tight">
+                  {p.title}
+                </h3>
+              </div>
+
+              {/* Description */}
+              <p className="text-sm text-text-secondary leading-relaxed">
+                {p.description}
+              </p>
+            </div>
+          ))}
         </div>
-      </Container>
+      </div>
     </section>
   );
 };

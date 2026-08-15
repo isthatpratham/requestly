@@ -6,9 +6,6 @@ import { ApiRequestState, ApiResponseWrapper } from "@/types/api";
 import { recordHistoryEntry } from "@/lib/storage/historyStorage";
 import { RequestBuilder } from "./RequestBuilder";
 import { ResponseViewer } from "./ResponseViewer";
-import { Container } from "@/components/ui/Container";
-import { PageHeading } from "@/components/ui/PageHeading";
-import { Badge } from "@/components/ui/Badge";
 
 export const PlaygroundShell: React.FC = () => {
   const searchParams = useSearchParams();
@@ -116,39 +113,63 @@ export const PlaygroundShell: React.FC = () => {
   };
 
   return (
-    <Container className="py-8 space-y-8">
-      {/* Page Heading */}
-      <PageHeading
-        title="API Playground"
-        description="Construct, configure, and test arbitrary HTTP API requests. Inspect live response codes, headers, and JSON body payloads."
-        badge={
-          <Badge variant="outline" size="sm" className="font-mono">
-            {loadedApiName ? `PRELOADED // ${loadedApiName}` : "API WORKSPACE"}
-          </Badge>
-        }
-      />
-
-      {/* Main Split Layout: Request Builder on Left/Top, Response Viewer on Right/Bottom */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 items-start">
-        <div className="space-y-4">
-          <h2 className="text-sm font-semibold text-brand-black tracking-tight border-b border-border-subtle pb-2 font-mono uppercase">
-            Request Configuration
-          </h2>
-          <RequestBuilder
-            requestState={requestState}
-            onRequestChange={setRequestState}
-            onSend={handleSendRequest}
-            isSending={isSending}
-          />
-        </div>
-
-        <div className="space-y-4">
-          <h2 className="text-sm font-semibold text-brand-black tracking-tight border-b border-border-subtle pb-2 font-mono uppercase">
-            Response Output
-          </h2>
-          <ResponseViewer response={response} isSending={isSending} />
+    <div className="min-h-screen" style={{ paddingTop: "72px" }}>
+      {/* Workspace Header */}
+      <div className="border-b border-border-default bg-background-secondary">
+        <div className="max-w-5xl mx-auto px-6 md:px-10 py-8">
+          <div className="flex flex-wrap items-center justify-between gap-3 mb-2">
+            <span className="font-mono text-[10px] tracking-[0.2em] uppercase text-text-muted">
+              {loadedApiName ? `Preloaded // ${loadedApiName}` : "Developer Instrument"}
+            </span>
+            <span className="font-mono text-[10px] text-text-muted">
+              POST /api/request · SSRF Protection Active
+            </span>
+          </div>
+          <h1 className="font-display text-3xl sm:text-4xl font-medium text-brand-black tracking-tight mb-2">
+            API Playground
+          </h1>
+          <p className="text-sm text-text-secondary max-w-lg leading-relaxed">
+            Construct, configure, and execute arbitrary HTTP requests server-side.
+            Inspect live HTTP status, response headers, and raw JSON payloads.
+          </p>
         </div>
       </div>
-    </Container>
+
+      {/* Main Split Layout: Request Builder on Left/Top, Response Viewer on Right/Bottom */}
+      <div className="max-w-5xl mx-auto px-6 md:px-10 py-8">
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 items-start">
+          <div className="space-y-3">
+            <div className="flex items-center justify-between border-b border-border-subtle pb-2">
+              <span className="font-mono text-[10px] tracking-widest text-text-muted uppercase font-semibold">
+                01 // Request Configuration
+              </span>
+              <span className="font-mono text-[10px] text-text-muted">
+                {requestState.method}
+              </span>
+            </div>
+            <RequestBuilder
+              requestState={requestState}
+              onRequestChange={setRequestState}
+              onSend={handleSendRequest}
+              isSending={isSending}
+            />
+          </div>
+
+          <div className="space-y-3">
+            <div className="flex items-center justify-between border-b border-border-subtle pb-2">
+              <span className="font-mono text-[10px] tracking-widest text-text-muted uppercase font-semibold">
+                02 // Response Output
+              </span>
+              {isSending && (
+                <span className="font-mono text-[10px] text-accent-blue animate-pulse">
+                  Sending request…
+                </span>
+              )}
+            </div>
+            <ResponseViewer response={response} isSending={isSending} />
+          </div>
+        </div>
+      </div>
+    </div>
   );
 };

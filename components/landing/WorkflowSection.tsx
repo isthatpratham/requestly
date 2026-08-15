@@ -1,74 +1,80 @@
 import * as React from "react";
-import { Container } from "@/components/ui/Container";
 
-const WORKFLOW_STEPS = [
+const steps = [
   {
-    step: "01",
-    name: "Discover",
-    description: "Find public APIs across categories like Weather, Finance, Games, AI, and Infrastructure.",
+    n: "1",
+    verb: "Find",
+    headline: "Browse the catalog",
+    body: "Search 1,670 public APIs by category, auth method, HTTPS, or CORS support. Filter to the exact type of API you need. Click through to full technical details.",
+    code: "GET /api/apis?category=Finance&https=true",
   },
   {
-    step: "02",
-    name: "Inspect",
-    description: "Review detailed API metadata, authentication requirements, HTTPS, and CORS support.",
+    n: "2",
+    verb: "Test",
+    headline: "Run in the Playground",
+    body: "Open any API directly in the Playground with one click. Configure method, URL, query params, headers, and authentication. Execute the request server-side and inspect the live response.",
+    code: "POST /api/request → 200 OK · 142ms",
   },
   {
-    step: "03",
-    name: "Test",
-    description: "Launch the Playground to execute GET, POST, PUT, or DELETE requests with custom params.",
-  },
-  {
-    step: "04",
-    name: "Understand",
-    description: "Inspect live response status codes, exact latency, formatted JSON bodies, and headers.",
-  },
-  {
-    step: "05",
-    name: "Generate",
-    description: "Export configured requests as production-ready cURL, JavaScript, or Python snippets.",
-  },
-  {
-    step: "06",
-    name: "Reuse",
-    description: "Save APIs to browser-local collections and revisit request history without an account.",
+    n: "3",
+    verb: "Ship",
+    headline: "Export the code",
+    body: "After confirming the API works, export the working configuration as cURL, JavaScript (Fetch API), or Python (Requests library). Paste into your codebase and integrate immediately.",
+    code: "curl -X GET 'https://api.example.com/data' -H 'Accept: application/json'",
   },
 ];
 
 export const WorkflowSection: React.FC = () => {
   return (
-    <section className="py-16 md:py-24 border-b border-border-default">
-      <Container className="space-y-12">
-        <div className="space-y-3 max-w-2xl">
-          <div className="text-xs font-mono uppercase text-text-muted tracking-wider">
-            02 // DEVELOPER WORKFLOW
-          </div>
-          <h2 className="text-2xl sm:text-3xl font-semibold tracking-tight text-brand-black">
-            From API discovery to production code in six steps.
+    <section className="border-b border-border-default py-20 md:py-28 bg-background-secondary">
+      <div className="max-w-5xl mx-auto px-6 md:px-10">
+
+        {/* Header */}
+        <div className="mb-14">
+          <span className="font-mono text-[10px] tracking-[0.2em] uppercase text-text-muted block mb-4">
+            Workflow
+          </span>
+          <h2 className="font-display text-3xl sm:text-4xl font-medium text-brand-black leading-[1.1] tracking-tight max-w-xl text-balance">
+            From discovery to working integration code.
           </h2>
-          <p className="text-sm font-normal text-text-secondary leading-relaxed">
-            Eliminate friction between evaluating an API and writing the first line of code.
-          </p>
         </div>
 
-        {/* Workflow Grid */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-          {WORKFLOW_STEPS.map((item) => (
+        {/* Steps */}
+        <div className="space-y-0">
+          {steps.map((step, i) => (
             <div
-              key={item.step}
-              className="p-5 rounded-sm border border-border-default bg-background-elevated space-y-2 hover:border-border-strong transition-colors"
+              key={step.n}
+              className="grid grid-cols-1 md:grid-cols-[60px_1fr_auto] gap-4 md:gap-10 py-8 border-t border-border-default first:border-t-0"
             >
-              <div className="flex items-center justify-between">
-                <span className="font-mono text-xs text-text-muted font-bold">{item.step}</span>
-                <span className="text-[10px] font-mono text-text-disabled uppercase">PHASE</span>
+              {/* Step number */}
+              <div className="font-mono text-[10px] tracking-widest text-text-disabled uppercase flex md:flex-col items-center md:items-start gap-3">
+                <span className="text-2xl font-semibold text-brand-black">{step.n}</span>
+                <span className="text-[10px]">{step.verb}</span>
+                {i < steps.length - 1 && (
+                  <div className="hidden md:block w-px h-6 bg-border-default mt-1 ml-px" aria-hidden />
+                )}
               </div>
-              <h3 className="text-base font-semibold text-brand-black tracking-tight">
-                {item.name}
-              </h3>
-              <p className="text-xs text-text-secondary leading-relaxed">{item.description}</p>
+
+              {/* Content */}
+              <div className="space-y-3">
+                <h3 className="font-display text-xl md:text-2xl font-medium text-brand-black tracking-tight">
+                  {step.headline}
+                </h3>
+                <p className="text-sm text-text-secondary leading-relaxed max-w-md">
+                  {step.body}
+                </p>
+              </div>
+
+              {/* Code sample */}
+              <div className="self-start md:self-center">
+                <code className="block font-mono text-[10px] text-text-muted bg-background-code border border-border-default px-3 py-2 rounded-xs whitespace-nowrap overflow-hidden text-ellipsis max-w-[240px]">
+                  {step.code}
+                </code>
+              </div>
             </div>
           ))}
         </div>
-      </Container>
+      </div>
     </section>
   );
 };

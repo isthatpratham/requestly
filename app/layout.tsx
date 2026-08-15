@@ -2,7 +2,7 @@ import type { Metadata, Viewport } from "next";
 import "./globals.css";
 import { Navbar } from "@/components/layout/Navbar";
 import { Footer } from "@/components/layout/Footer";
-import { GlobalMatrixBackground } from "@/components/visual/GlobalMatrixBackground";
+import { ThemeProvider } from "@/components/layout/ThemeProvider";
 import { APP_NAME, APP_DESCRIPTION } from "@/lib/constants";
 
 export const metadata: Metadata = {
@@ -18,7 +18,6 @@ export const metadata: Metadata = {
 export const viewport: Viewport = {
   width: "device-width",
   initialScale: 1,
-  themeColor: "#FAFAFA",
 };
 
 export default function RootLayout({
@@ -27,14 +26,13 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en" className="h-full bg-background-primary text-text-primary antialiased">
-      <body className="flex min-h-full flex-col font-sans selection:bg-neutral-200 selection:text-brand-black relative">
-        <GlobalMatrixBackground />
-        <div className="relative z-10 flex min-h-full flex-col w-full">
+    <html lang="en" suppressHydrationWarning>
+      <body className="flex min-h-full flex-col bg-background-primary text-text-primary antialiased selection:bg-accent-blue-muted selection:text-brand-black">
+        <ThemeProvider>
           <Navbar />
           <main className="flex-1 w-full">{children}</main>
           <Footer />
-        </div>
+        </ThemeProvider>
       </body>
     </html>
   );

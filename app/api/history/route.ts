@@ -5,12 +5,19 @@ export const dynamic = "force-dynamic";
 export async function GET() {
   return NextResponse.json(
     {
-      success: false,
-      error: {
-        code: "NOT_IMPLEMENTED",
-        message: "Phase 1 Foundation — History is browser-local.",
-      },
+      success: true,
+      message: "Request History is stored browser-locally via LocalStorage.",
     },
-    { status: 501 }
+    { status: 200 }
+  );
+}
+
+export async function POST() {
+  return NextResponse.json(
+    {
+      success: true,
+      message: "Request History is stored browser-locally via LocalStorage.",
+    },
+    { status: 200 }
   );
 }
